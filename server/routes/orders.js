@@ -2,6 +2,8 @@ const router = require('express').Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const DeliveryConfig = require('../models/DeliveryConfig');
+const Settings = require('../models/Settings');
+const { sendAdminNotification, sendCustomerConfirmation } = require('../services/emailService');
 const auth = require('../middleware/auth');
 
 // POST create order (guest, no auth required)
@@ -75,6 +77,19 @@ router.post('/', async (req, res) => {
         { $inc: { 'variants.$.stock': -item.quantity } }
       );
     }
+
+    // Send email notifications (async, don't block response)
+    const settings = await Settings.getSettings();
+    Promise.allSettled([
+      sendAdminNotification(order, settings),
+      sendCustomerConfirmation(order, settings)
+    ]).then(results => {
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Email ${index === 0 ? 'admin' : 'customer'} failed:`, result.reason);
+        }
+      });
+    });
 
     res.status(201).json(order);
   } catch (err) {

@@ -26,6 +26,7 @@ import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminDelivery from './pages/admin/AdminDelivery';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminColors from './pages/admin/AdminColors';
+import AdminSettings from './pages/admin/AdminSettings';
 
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from './store/authSlice';
@@ -77,6 +78,7 @@ function App() {
             <Route path="delivery" element={<AdminDelivery />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="colors" element={<AdminColors />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

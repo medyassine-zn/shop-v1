@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 export default function ProductCard({ product }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const { hexFor } = useColors();
 
   const totalStock = product.variants?.reduce((s, v) => s + v.stock, 0) ?? 0;
@@ -28,11 +29,19 @@ export default function ProductCard({ product }) {
         onMouseEnter={() => product.images?.length > 1 && setImgIdx(1)}
         onMouseLeave={() => setImgIdx(0)}
       >
+        {/* Loading skeleton */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 bg-dark-300 animate-pulse" />
+        )}
         <img
           src={imgError ? 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600' : getImageSrc(product.images?.[imgIdx])}
           alt={product.name}
-          onError={() => setImgError(true)}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => { setImgError(true); setImgLoaded(true); }}
+          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+            imgLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
         />
 
         {/* Badges */}

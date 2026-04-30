@@ -7,12 +7,15 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Middleware
+// Configure CORS origins
+const corsOrigins = [
+  'http://localhost:5173',
+  process.env.CLIENT_URL,
+  ...(process.env.PRODUCTION_URLS ? process.env.PRODUCTION_URLS.split(',') : [])
+].filter(Boolean);
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://myzshop.vercel.app'
-  ],
+  origin: corsOrigins,
   credentials: true
 }));
 app.use(express.json());
@@ -26,23 +29,23 @@ app.use('/api/delivery', require('./routes/delivery'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/colors', require('./routes/colors'));
+app.use('/api/settings', require('./routes/settings'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'DBACH API running' }));
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-mongoose.connection.on("connected", () => {
-  console.log("✅ MongoDB Connected");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error("❌ Mongo Error:", err);
-});
+// Connect to MongoDB Atlas
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    return true;
+  } catch (error) {
+    console.error('❌ MongoDB Connection Error:', error.message);
+    console.error('Please check your MONGO_URI in .env file');
+    process.exit(1);
+  }
+};
 
 // Seed initial data
 async function seedData() {
@@ -51,6 +54,7 @@ async function seedData() {
   const DeliveryConfig = require('./models/DeliveryConfig');
   const Category = require('./models/Category');
   const Color = require('./models/Color');
+  const Settings = require('./models/Settings');
   const bcrypt = require('bcryptjs');
 
   // Create admin if not exists
@@ -114,6 +118,20 @@ async function seedData() {
       ],
     });
     console.log('✅ Delivery config created');
+  }
+
+  // Initialize default settings if not exists
+  const settingsExists = await Settings.findOne({});
+  if (!settingsExists) {
+    await Settings.create({
+      storeName: 'MYZshop',
+      phone: '+216 XX XXX XXX',
+      email: 'contact@myzshop.tn',
+      address: 'Tunis, Tunisie',
+      whatsapp: '',
+      notificationEmail: ''
+    });
+    console.log('✅ Default settings created');
   }
 
   // Seed sample products
@@ -320,5 +338,19 @@ async function seedData() {
   }
 }
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Start server only after DB connection
+const startServer = async () => {
+  await connectDB();
+  
+  // Seed initial data
+  await seedData();
+  
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 API Health: http://localhost:${PORT}/api/health`);
+  });
+};
+
+startServer();

@@ -74,3 +74,10 @@ export const colorsApi = {
   update: (id, name, hex) => api.put(`/colors/${id}`, { name, hex }),
   delete: (id) => api.delete(`/colors/${id}`),
 };
+
+// Settings API
+export const settingsApi = {
+  getPublic: () => api.get('/settings/public'),
+  getAll: () => api.get('/settings'),
+  update: (data) => api.put('/settings', data),
+};

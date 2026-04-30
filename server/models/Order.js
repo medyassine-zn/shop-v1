@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema({
   customerInfo: {
     name: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
+    email: { type: String, trim: true },
     address: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
     deliveryType: { type: String, enum: ['home', 'pickup'], default: 'home' },

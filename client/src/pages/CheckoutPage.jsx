@@ -19,7 +19,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: '', phone: '', address: '', city: '', deliveryType: 'home', notes: '',
+    name: '', phone: '', email: '', address: '', city: '', deliveryType: 'home', notes: '',
   });
   const [deliveryInfo, setDeliveryInfo] = useState({ price: 8, estimatedDays: '2-3' });
   const [loading, setLoading] = useState(false);
@@ -41,6 +41,7 @@ export default function CheckoutPage() {
     const e = {};
     if (!form.name.trim()) e.name = 'Nom requis';
     if (!form.phone.trim() || !/^[0-9+\s-]{8,15}$/.test(form.phone.trim())) e.phone = 'Téléphone invalide';
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Email invalide';
     if (!form.address.trim()) e.address = 'Adresse requise';
     if (!form.city) e.city = 'Ville requise';
     setErrors(e);
@@ -118,6 +119,19 @@ export default function CheckoutPage() {
                       className={`input-field ${errors.phone ? 'border-red-500' : ''}`}
                     />
                     {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-gray-400 text-xs uppercase tracking-wider mb-2 block">Email (optionnel)</label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      placeholder="votre@email.com"
+                      className={`input-field ${errors.email ? 'border-red-500' : ''}`}
+                    />
+                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                    <p className="text-gray-600 text-xs mt-1">Pour recevoir la confirmation de commande</p>
                   </div>
 
                   <div className="sm:col-span-2">

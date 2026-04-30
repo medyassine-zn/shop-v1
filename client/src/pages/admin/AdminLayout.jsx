@@ -10,6 +10,7 @@ const navItems = [
   { to: '/admin/delivery', icon: '🚚', label: 'Livraison' },
   { to: '/admin/categories', icon: '🏷️', label: 'Catégories' },
   { to: '/admin/colors', icon: '🎨', label: 'Couleurs' },
+  { to: '/admin/settings', icon: '⚙️', label: 'Paramètres' },
 ];
 
 export default function AdminLayout() {
