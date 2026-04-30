@@ -15,7 +15,7 @@ const corsOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: corsOrigins,
+  origin: "https://myshop-v1.vercel.app/",
   credentials: true
 }));
 app.use(express.json());
