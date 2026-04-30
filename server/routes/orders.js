@@ -6,6 +6,8 @@ const Settings = require('../models/Settings');
 const { sendAdminNotification, sendCustomerConfirmation } = require('../services/emailService');
 const auth = require('../middleware/auth');
 
+await sendAdminNotification(order);
+await sendCustomerConfirmation(order);
 // POST create order (guest, no auth required)
 router.post('/', async (req, res) => {
   try {
