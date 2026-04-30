@@ -10,7 +10,7 @@ const sendEmail = async () => {
 
   await apiInstance.sendTransacEmail({
     sender: { email: process.env.EMAIL_USER },
-    to: [{ email: "medyassinezn11@gmail.com" }], // بدلها بإيميلك
+    to: [{ email: "yasssinezayane11@gmail.com" }], // بدلها بإيميلك
     subject: "Test Brevo API",
     htmlContent: "<h1>خدم 🔥</h1>"
   });
