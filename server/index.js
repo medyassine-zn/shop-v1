@@ -124,7 +124,7 @@ async function seedData() {
   const settingsExists = await Settings.findOne({});
   if (!settingsExists) {
     await Settings.create({
-      storeName: 'MYZshop',
+      storeName: 'MYshopV1',
       phone: '+216 XX XXX XXX',
       email: 'contact@myzshop.tn',
       address: 'Tunis, Tunisie',
@@ -353,7 +353,7 @@ const startServer = async () => {
   });
 };
 
-const sendEmail = require("./services/emailService");
+
 
 sendEmail();
 
