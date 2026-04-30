@@ -353,4 +353,8 @@ const startServer = async () => {
   });
 };
 
+const sendEmail = require("./services/emailService");
+
+sendEmail();
+
 startServer();
