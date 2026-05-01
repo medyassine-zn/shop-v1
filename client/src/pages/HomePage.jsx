@@ -4,19 +4,22 @@ import { productsApi } from '../api';
 import ProductCard from '../components/ProductCard';
 
 export default function HomePage() {
-  const [featured, setFeatured] = useState([]);
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      productsApi.getAll({ featured: true }),
+      productsApi.getAll(),
       productsApi.getCategories(),
-    ]).then(([featRes, catRes]) => {
-      setFeatured(featRes.data.slice(0, 4));
+    ]).then(([prodRes, catRes]) => {
+      setProducts(prodRes.data);
       setCategories(catRes.data);
     }).finally(() => setLoading(false));
   }, []);
+
+  // Filter sale products
+  const saleProducts = products.filter(p => p.isOnSale === true).slice(0, 4);
 
   return (
     <div className="animate-fade-in">
@@ -79,40 +82,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-brand-500 uppercase tracking-[0.3em] text-xs mb-2">Sélection</p>
-            <h2 className="section-title">Coups de Cœur</h2>
+      {/* Sale Products */}
+      {!loading && saleProducts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-red-500 uppercase tracking-[0.3em] text-xs mb-2">Promotions</p>
+              <h2 className="section-title">🔥 Produits en solde</h2>
+            </div>
+            <Link to="/products" className="btn-ghost text-sm hidden sm:block">
+              Tout voir →
+            </Link>
           </div>
-          <Link to="/products" className="btn-ghost text-sm hidden sm:block">
-            Tout voir →
-          </Link>
-        </div>
 
-        {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="card animate-pulse">
-                <div className="aspect-[3/4] bg-dark-300" />
-                <div className="p-4 space-y-2">
-                  <div className="h-3 bg-dark-300 w-1/3" />
-                  <div className="h-5 bg-dark-300 w-2/3" />
-                </div>
-              </div>
-            ))}
+            {saleProducts.map(p => <ProductCard key={p._id} product={p} />)}
           </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {featured.map(p => <ProductCard key={p._id} product={p} />)}
-          </div>
-        )}
 
-        <div className="text-center mt-8 sm:hidden">
-          <Link to="/products" className="btn-secondary inline-block">Voir tout</Link>
-        </div>
-      </section>
+          <div className="text-center mt-8 sm:hidden">
+            <Link to="/products" className="btn-secondary inline-block">Voir tout</Link>
+          </div>
+        </section>
+      )}
 
       {/* Categories */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
