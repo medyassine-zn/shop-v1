@@ -106,7 +106,7 @@ export default function AdminProductForm() {
   const [loading, setLoading]                 = useState(false);
   const [saving, setSaving]                   = useState(false);
   const [form, setForm]                       = useState({
-    name: '', description: '', basePrice: '', category: '', featured: false,
+    name: '', description: '', basePrice: '', category: '', onSale: false, discountPercentage: '',
   });
   const [variants, setVariants]               = useState([]);
   const [existingImages, setExistingImages]   = useState([]);
@@ -137,7 +137,9 @@ export default function AdminProductForm() {
         const p = r.data;
         setForm({
           name: p.name, description: p.description,
-          basePrice: p.basePrice, category: p.category, featured: p.featured,
+          basePrice: p.basePrice, category: p.category,
+          onSale: p.onSale || false,
+          discountPercentage: p.discountPercentage || '',
         });
         setVariants(p.variants);
         setExistingImages(p.images || []);
@@ -304,14 +306,14 @@ export default function AdminProductForm() {
                 </Link>
               </label>
               <div className="relative">
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <select
                     value={form.category}
                     onChange={e => {
                       setShowAddCat(false);
                       setForm(f => ({ ...f, category: e.target.value }));
                     }}
-                    className="input-field flex-1"
+                    className="input-field flex-1 focus:ring-2 focus:ring-brand-500/30"
                     required
                   >
                     <option value="">Choisir une catégorie...</option>
@@ -325,10 +327,10 @@ export default function AdminProductForm() {
                     type="button"
                     onClick={() => { setShowAddCat(v => !v); setShowAddColor(false); }}
                     title="Créer une nouvelle catégorie"
-                    className={`shrink-0 w-10 h-10 border flex items-center justify-center text-xl font-light transition-all ${
+                    className={`shrink-0 w-10 h-10 border flex items-center justify-center text-xl font-light transition-all rounded-sm ${
                       showAddCat
                         ? 'border-brand-500 text-brand-400 bg-brand-500/10'
-                        : 'border-dark-400 text-gray-400 hover:border-brand-500 hover:text-brand-400'
+                        : 'border-dark-400 text-gray-400 hover:border-brand-500 hover:text-brand-400 hover:bg-dark-300'
                     }`}
                   >
                     +
@@ -352,17 +354,70 @@ export default function AdminProductForm() {
               )}
             </div>
 
+            {/* ── SALE TOGGLE ── */}
             <div className="sm:col-span-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.featured}
-                  onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))}
-                  className="w-4 h-4 accent-brand-500"
-                />
-                <span className="text-gray-300 text-sm">Mettre en avant (coup de cœur)</span>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className={`relative w-12 h-6 rounded-full transition-colors ${form.onSale ? 'bg-red-500' : 'bg-dark-400'}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.onSale}
+                    onChange={e => {
+                      const onSale = e.target.checked;
+                      setForm(f => ({
+                        ...f,
+                        onSale,
+                        discountPercentage: onSale ? (f.discountPercentage || '10') : ''
+                      }));
+                    }}
+                    className="sr-only"
+                  />
+                  <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${form.onSale ? 'translate-x-6' : 'translate-x-0'}`} />
+                </div>
+                <span className={`text-sm font-medium transition-colors ${form.onSale ? 'text-red-400' : 'text-gray-300'}`}>
+                  En solde 🔥
+                </span>
               </label>
             </div>
+
+            {/* ── DISCOUNT PERCENTAGE (shown when onSale) ── */}
+            {form.onSale && (
+              <div className="sm:col-span-2 animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <div className="flex-1">
+                    <label className="text-red-400 text-xs uppercase tracking-wider mb-2 block">
+                      Pourcentage de réduction (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={form.discountPercentage}
+                      onChange={e => {
+                        let value = parseInt(e.target.value) || 0;
+                        value = Math.max(0, Math.min(100, value));
+                        setForm(f => ({ ...f, discountPercentage: value.toString() }));
+                      }}
+                      min="0"
+                      max="100"
+                      placeholder="20"
+                      className="input-field w-full sm:w-32 border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/30"
+                      required={form.onSale}
+                    />
+                  </div>
+                  <div className="text-sm text-gray-300">
+                    {form.basePrice && form.discountPercentage && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 line-through">{parseFloat(form.basePrice).toFixed(0)} DT</span>
+                        <span className="text-red-400 font-bold text-lg">
+                          {(parseFloat(form.basePrice) * (1 - parseInt(form.discountPercentage || 0) / 100)).toFixed(0)} DT
+                        </span>
+                        <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">
+                          -{form.discountPercentage}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
