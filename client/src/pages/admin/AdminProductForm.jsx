@@ -202,18 +202,21 @@ export default function AdminProductForm() {
 
     setSaving(true);
     try {
+      // Sanitize sale fields before sending
+      const isOnSale = form.isOnSale === true;
+      const discountPercentage = isOnSale ? Number(form.discountPercentage) || 0 : 0;
+
       // Debug log
-      console.log({ isOnSale: form.isOnSale, discountPercentage: form.discountPercentage });
+      console.log({ isOnSale, discountPercentage });
 
       const data = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        // Ensure boolean is sent as string 'true'/'false' for FormData compatibility
-        if (k === 'isOnSale') {
-          data.append(k, v === true ? 'true' : 'false');
-        } else {
-          data.append(k, v);
-        }
-      });
+      // Append text fields explicitly (FormData sends everything as strings)
+      data.append('name', form.name);
+      data.append('description', form.description);
+      data.append('basePrice', form.basePrice);
+      data.append('category', form.category);
+      data.append('isOnSale', isOnSale.toString());
+      data.append('discountPercentage', discountPercentage.toString());
       data.append('variants', JSON.stringify(variants));
       data.append('existingImages', JSON.stringify(existingImages));
       newFiles.forEach(f => data.append('images', f));
@@ -402,7 +405,7 @@ export default function AdminProductForm() {
                       type="number"
                       value={form.discountPercentage}
                       onChange={e => {
-                        let value = parseInt(e.target.value, 10);
+                        let value = Number(e.target.value);
                         if (isNaN(value)) value = 0;
                         value = Math.max(0, Math.min(100, value));
                         setForm(f => ({ ...f, discountPercentage: value }));

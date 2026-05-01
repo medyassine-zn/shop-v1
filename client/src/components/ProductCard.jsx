@@ -14,11 +14,11 @@ export default function ProductCard({ product }) {
   const isOutOfStock = totalStock === 0;
 
   // Sale calculation
-  const isOnSale = product.onSale === true;
+  const isOnSale = product.isOnSale === true;
   const discountPercentage = product.discountPercentage || 0;
   const originalPrice = product.basePrice || 0;
   const discountedPrice = isOnSale
-    ? originalPrice * (1 - discountPercentage / 100)
+    ? Math.round(originalPrice * (1 - discountPercentage / 100))
     : originalPrice;
 
   const getImageSrc = (src) => {
@@ -30,7 +30,7 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product._id}`}
-      className="group block card hover:border-brand-600/50 transition-all duration-300"
+      className="group block card hover:border-brand-600/50 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-0.5 transition-all duration-300"
     >
       <div
         className="relative aspect-[3/4] overflow-hidden bg-dark-200"
@@ -54,17 +54,19 @@ export default function ProductCard({ product }) {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {isOnSale && (
-            <span className="bg-red-500 text-white text-xs px-2 py-0.5 uppercase tracking-widest font-medium animate-pulse">
-              Solde -{discountPercentage}%
-            </span>
-          )}
           {isOutOfStock && (
             <span className="bg-dark-100/90 text-gray-400 text-xs px-2 py-0.5 uppercase tracking-widest border border-dark-300">
               Épuisé
             </span>
           )}
         </div>
+
+        {/* Sale badge - top right */}
+        {isOnSale && (
+          <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-sm shadow-lg">
+            -{discountPercentage}%
+          </span>
+        )}
 
         {/* Quick view overlay */}
         <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/30 transition-all duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
@@ -84,11 +86,11 @@ export default function ProductCard({ product }) {
           <div className="flex items-center gap-2">
             {isOnSale ? (
               <>
-                <span className="text-gray-500 line-through text-sm">{originalPrice.toFixed(0)} DT</span>
-                <span className="text-red-500 font-bold text-xl">{discountedPrice.toFixed(0)} DT</span>
+                <span className="text-gray-500 line-through text-sm">{Math.round(originalPrice)} DT</span>
+                <span className="text-red-500 font-bold text-xl">{discountedPrice} DT</span>
               </>
             ) : (
-              <span className="text-brand-400 font-semibold text-xl">{originalPrice.toFixed(0)} DT</span>
+              <span className="text-brand-400 font-semibold text-xl">{Math.round(originalPrice)} DT</span>
             )}
           </div>
           {/* Color dots */}
