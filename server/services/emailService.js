@@ -2,28 +2,51 @@ const SibApiV3Sdk = require('sib-api-v3-sdk');
 
 const sendAdminNotification = async (order) => {
   try {
-    console.log("📤 Sending email...");
+    console.log("📤 Sending admin email...");
 
-    const defaultClient = SibApiV3Sdk.ApiClient.instance;
-
-    // 🔥 هذا هو التعديل المهم
-    defaultClient.authentications['api-key'].apiKey = process.env.EMAIL_PASS;
+    const client = SibApiV3Sdk.ApiClient.instance;
+    client.authentications['api-key'].apiKey = process.env.EMAIL_PASS;
 
     const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
     await apiInstance.sendTransacEmail({
       sender: { email: process.env.EMAIL_USER },
       to: [{ email: process.env.EMAIL_USER }],
-      subject: "Test Email",
-      htmlContent: "<h1>🔥 Email Works</h1>"
+      subject: `Nouvelle commande ${order.orderNumber}`,
+      htmlContent: `<h1>Nouvelle commande 🔥</h1>`
     });
 
-    console.log("✅ Email sent");
+    console.log("✅ Admin email sent");
   } catch (err) {
-    console.error("❌ Email error:", err.response?.text || err.message);
+    console.error("❌ Admin email error:", err.response?.text || err.message);
+  }
+};
+
+const sendCustomerConfirmation = async (order) => {
+  try {
+    if (!order.customerInfo?.email) return;
+
+    console.log("📤 Sending customer email...");
+
+    const client = SibApiV3Sdk.ApiClient.instance;
+    client.authentications['api-key'].apiKey = process.env.EMAIL_PASS;
+
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    await apiInstance.sendTransacEmail({
+      sender: { email: process.env.EMAIL_USER },
+      to: [{ email: order.customerInfo.email }],
+      subject: "Confirmation commande",
+      htmlContent: `<h2>Merci pour votre commande ❤️</h2>`
+    });
+
+    console.log("✅ Customer email sent");
+  } catch (err) {
+    console.error("❌ Customer email error:", err.response?.text || err.message);
   }
 };
 
 module.exports = {
-  sendAdminNotification
+  sendAdminNotification,
+  sendCustomerConfirmation
 };
