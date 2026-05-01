@@ -106,7 +106,7 @@ export default function AdminProductForm() {
   const [loading, setLoading]                 = useState(false);
   const [saving, setSaving]                   = useState(false);
   const [form, setForm]                       = useState({
-    name: '', description: '', basePrice: '', category: '', onSale: false, discountPercentage: '',
+    name: '', description: '', basePrice: '', category: '', isOnSale: false, discountPercentage: 0,
   });
   const [variants, setVariants]               = useState([]);
   const [existingImages, setExistingImages]   = useState([]);
@@ -138,8 +138,8 @@ export default function AdminProductForm() {
         setForm({
           name: p.name, description: p.description,
           basePrice: p.basePrice, category: p.category,
-          onSale: p.onSale || false,
-          discountPercentage: p.discountPercentage || '',
+          isOnSale: p.isOnSale || false,
+          discountPercentage: p.discountPercentage || 0,
         });
         setVariants(p.variants);
         setExistingImages(p.images || []);
@@ -202,8 +202,18 @@ export default function AdminProductForm() {
 
     setSaving(true);
     try {
+      // Debug log
+      console.log({ isOnSale: form.isOnSale, discountPercentage: form.discountPercentage });
+
       const data = new FormData();
-      Object.entries(form).forEach(([k, v]) => data.append(k, v));
+      Object.entries(form).forEach(([k, v]) => {
+        // Ensure boolean is sent as string 'true'/'false' for FormData compatibility
+        if (k === 'isOnSale') {
+          data.append(k, v === true ? 'true' : 'false');
+        } else {
+          data.append(k, v);
+        }
+      });
       data.append('variants', JSON.stringify(variants));
       data.append('existingImages', JSON.stringify(existingImages));
       newFiles.forEach(f => data.append('images', f));
@@ -357,30 +367,31 @@ export default function AdminProductForm() {
             {/* ── SALE TOGGLE ── */}
             <div className="sm:col-span-2">
               <label className="flex items-center gap-3 cursor-pointer group">
-                <div className={`relative w-12 h-6 rounded-full transition-colors ${form.onSale ? 'bg-red-500' : 'bg-dark-400'}`}>
+                <div className={`relative w-12 h-6 rounded-full transition-colors ${form.isOnSale ? 'bg-red-500' : 'bg-dark-400'}`}>
                   <input
                     type="checkbox"
-                    checked={form.onSale}
+                    checked={form.isOnSale}
                     onChange={e => {
-                      const onSale = e.target.checked;
+                      const isOnSale = e.target.checked;
                       setForm(f => ({
                         ...f,
-                        onSale,
-                        discountPercentage: onSale ? (f.discountPercentage || '10') : ''
+                        isOnSale,
+                        // Reset to 0 when unchecked, default to 10 when checked
+                        discountPercentage: isOnSale ? (f.discountPercentage || 10) : 0
                       }));
                     }}
                     className="sr-only"
                   />
-                  <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${form.onSale ? 'translate-x-6' : 'translate-x-0'}`} />
+                  <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${form.isOnSale ? 'translate-x-6' : 'translate-x-0'}`} />
                 </div>
-                <span className={`text-sm font-medium transition-colors ${form.onSale ? 'text-red-400' : 'text-gray-300'}`}>
+                <span className={`text-sm font-medium transition-colors ${form.isOnSale ? 'text-red-400' : 'text-gray-300'}`}>
                   En solde 🔥
                 </span>
               </label>
             </div>
 
-            {/* ── DISCOUNT PERCENTAGE (shown when onSale) ── */}
-            {form.onSale && (
+            {/* ── DISCOUNT PERCENTAGE (shown when isOnSale) ── */}
+            {form.isOnSale && (
               <div className="sm:col-span-2 animate-fade-in">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
                   <div className="flex-1">
@@ -391,23 +402,24 @@ export default function AdminProductForm() {
                       type="number"
                       value={form.discountPercentage}
                       onChange={e => {
-                        let value = parseInt(e.target.value) || 0;
+                        let value = parseInt(e.target.value, 10);
+                        if (isNaN(value)) value = 0;
                         value = Math.max(0, Math.min(100, value));
-                        setForm(f => ({ ...f, discountPercentage: value.toString() }));
+                        setForm(f => ({ ...f, discountPercentage: value }));
                       }}
                       min="0"
                       max="100"
                       placeholder="20"
                       className="input-field w-full sm:w-32 border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/30"
-                      required={form.onSale}
+                      required={form.isOnSale}
                     />
                   </div>
                   <div className="text-sm text-gray-300">
-                    {form.basePrice && form.discountPercentage && (
+                    {form.basePrice && form.discountPercentage > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 line-through">{parseFloat(form.basePrice).toFixed(0)} DT</span>
                         <span className="text-red-400 font-bold text-lg">
-                          {(parseFloat(form.basePrice) * (1 - parseInt(form.discountPercentage || 0) / 100)).toFixed(0)} DT
+                          {(parseFloat(form.basePrice) * (1 - form.discountPercentage / 100)).toFixed(0)} DT
                         </span>
                         <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">
                           -{form.discountPercentage}%
