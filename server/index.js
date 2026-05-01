@@ -353,8 +353,4 @@ const startServer = async () => {
   });
 };
 
-
-
-sendEmail();
-
 startServer();
