@@ -32,7 +32,7 @@ function AddNewPopover({ label, placeholder, onAdd, onClose, withHex = false }) 
   };
 
   return (
-    <div className="absolute z-50 top-full mt-1 left-0 bg-dark-100 border border-brand-500/40 shadow-2xl p-4 min-w-[260px]">
+    <div className="absolute z-50 top-full mt-2 left-0 bg-dark-100 border border-brand-500/40 shadow-2xl rounded-lg p-4 min-w-[260px]">
       <p className="text-white text-xs font-medium uppercase tracking-widest mb-3">{label}</p>
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
@@ -307,7 +307,7 @@ export default function AdminProductForm() {
             </div>
 
             {/* ── DYNAMIC CATEGORY SELECT ── */}
-            <div>
+            <div className="relative z-20">
               <label className="text-gray-400 text-xs uppercase tracking-wider mb-2 block">
                 Catégorie *
                 <Link
@@ -318,47 +318,44 @@ export default function AdminProductForm() {
                   (gérer)
                 </Link>
               </label>
-              <div className="relative">
-                <div className="flex items-center gap-2">
-                  <select
-                    value={form.category}
-                    onChange={e => {
-                      setShowAddCat(false);
-                      setForm(f => ({ ...f, category: e.target.value }));
-                    }}
-                    className="input-field flex-1 focus:ring-2 focus:ring-brand-500/30"
-                    required
-                  >
-                    <option value="">Choisir une catégorie...</option>
-                    {categories.map(c => (
-                      <option key={c._id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={form.category}
+                  onChange={e => {
+                    setShowAddCat(false);
+                    setForm(f => ({ ...f, category: e.target.value }));
+                  }}
+                  className="input-field flex-1 min-w-0 focus:ring-2 focus:ring-brand-500/30"
+                  required
+                >
+                  <option value="">Choisir une catégorie...</option>
+                  {categories.map(c => (
+                    <option key={c._id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
 
-                  {/* "+" button to open popover */}
-                  <button
-                    type="button"
-                    onClick={() => { setShowAddCat(v => !v); setShowAddColor(false); }}
-                    title="Créer une nouvelle catégorie"
-                    className={`shrink-0 w-10 h-10 border flex items-center justify-center text-xl font-light transition-all rounded-sm ${
-                      showAddCat
-                        ? 'border-brand-500 text-brand-400 bg-brand-500/10'
-                        : 'border-dark-400 text-gray-400 hover:border-brand-500 hover:text-brand-400 hover:bg-dark-300'
-                    }`}
-                  >
-                    +
-                  </button>
-                </div>
-
-                {showAddCat && (
-                  <AddNewPopover
-                    label="Nouvelle catégorie"
-                    placeholder="ex: Costumes"
-                    onAdd={handleCreateCategory}
-                    onClose={() => setShowAddCat(false)}
-                  />
-                )}
+                <button
+                  type="button"
+                  onClick={() => { setShowAddCat(v => !v); setShowAddColor(false); }}
+                  title="Créer une nouvelle catégorie"
+                  className={`shrink-0 w-10 h-10 rounded-md border-2 flex items-center justify-center text-xl transition-all ${
+                    showAddCat
+                      ? 'border-brand-500 text-brand-400 bg-brand-500/20 shadow-lg shadow-brand-500/20'
+                      : 'border-dark-400 text-gray-500 hover:border-brand-500 hover:text-brand-400 hover:bg-dark-300'
+                  }`}
+                >
+                  +
+                </button>
               </div>
+
+              {showAddCat && (
+                <AddNewPopover
+                  label="Nouvelle catégorie"
+                  placeholder="ex: Costumes"
+                  onAdd={handleCreateCategory}
+                  onClose={() => setShowAddCat(false)}
+                />
+              )}
 
               {categories.length === 0 && !showAddCat && (
                 <p className="text-yellow-500/80 text-xs mt-1">
@@ -526,34 +523,35 @@ export default function AdminProductForm() {
                     (gérer)
                   </Link>
                 </label>
-                <div className="relative flex gap-2">
-                  <select
-                    value={variantForm.color}
-                    onChange={e => {
-                      setShowAddColor(false);
-                      setVariantForm(f => ({ ...f, color: e.target.value }));
-                    }}
-                    className="input-field text-sm py-2 min-w-[150px]"
-                  >
-                    <option value="">Choisir...</option>
-                    {colors.map(c => (
-                      <option key={c._id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+                <div className="relative z-20">
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={variantForm.color}
+                      onChange={e => {
+                        setShowAddColor(false);
+                        setVariantForm(f => ({ ...f, color: e.target.value }));
+                      }}
+                      className="input-field text-sm py-2 min-w-[150px] min-w-0 focus:ring-2 focus:ring-brand-500/30"
+                    >
+                      <option value="">Choisir...</option>
+                      {colors.map(c => (
+                        <option key={c._id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
 
-                  {/* "+" button */}
-                  <button
-                    type="button"
-                    onClick={() => { setShowAddColor(v => !v); setShowAddCat(false); }}
-                    title="Créer une nouvelle couleur"
-                    className={`shrink-0 w-10 h-10 border flex items-center justify-center text-xl font-light transition-all ${
-                      showAddColor
-                        ? 'border-brand-500 text-brand-400 bg-brand-500/10'
-                        : 'border-dark-400 text-gray-400 hover:border-brand-500 hover:text-brand-400'
-                    }`}
-                  >
-                    +
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowAddColor(v => !v); setShowAddCat(false); }}
+                      title="Créer une nouvelle couleur"
+                      className={`shrink-0 w-10 h-10 rounded-md border-2 flex items-center justify-center text-xl transition-all ${
+                        showAddColor
+                          ? 'border-brand-500 text-brand-400 bg-brand-500/20 shadow-lg shadow-brand-500/20'
+                          : 'border-dark-400 text-gray-500 hover:border-brand-500 hover:text-brand-400 hover:bg-dark-300'
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
 
                   {showAddColor && (
                     <AddNewPopover

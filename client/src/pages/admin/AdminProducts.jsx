@@ -89,7 +89,7 @@ export default function AdminProducts() {
                   <th className="text-left text-gray-500 text-xs uppercase tracking-wider px-5 py-3 hidden md:table-cell">Catégorie</th>
                   <th className="text-left text-gray-500 text-xs uppercase tracking-wider px-5 py-3">Prix</th>
                   <th className="text-left text-gray-500 text-xs uppercase tracking-wider px-5 py-3 hidden sm:table-cell">Stock</th>
-                  <th className="text-left text-gray-500 text-xs uppercase tracking-wider px-5 py-3 hidden md:table-cell">Vedette</th>
+                  <th className="text-left text-gray-500 text-xs uppercase tracking-wider px-5 py-3 hidden md:table-cell">Solde</th>
                   <th className="text-right text-gray-500 text-xs uppercase tracking-wider px-5 py-3">Actions</th>
                 </tr>
               </thead>
@@ -118,7 +118,15 @@ export default function AdminProducts() {
                         <span className="text-gray-400 text-sm">{p.category}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className="text-brand-400 font-semibold">{p.basePrice} DT</span>
+                        {p.isOnSale ? (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">-{p.discountPercentage}%</span>
+                            <span className="text-gray-500 line-through text-sm">{Math.round(p.basePrice)} DT</span>
+                            <span className="text-red-500 font-bold">{Math.round(p.basePrice * (1 - p.discountPercentage / 100))} DT</span>
+                          </div>
+                        ) : (
+                          <span className="text-brand-400 font-semibold">{p.basePrice} DT</span>
+                        )}
                       </td>
                       <td className="px-5 py-4 hidden sm:table-cell">
                         <span className={`text-sm font-medium ${totalStock === 0 ? 'text-red-400' : totalStock <= 5 ? 'text-yellow-400' : 'text-green-400'}`}>
@@ -126,10 +134,10 @@ export default function AdminProducts() {
                         </span>
                       </td>
                       <td className="px-5 py-4 hidden md:table-cell">
-                        {p.featured ? (
-                          <span className="text-brand-400 text-sm">⭐ Oui</span>
+                        {p.isOnSale ? (
+                          <span className="bg-red-600/20 text-red-400 text-xs font-medium px-2 py-1 rounded">-{p.discountPercentage}%</span>
                         ) : (
-                          <span className="text-gray-600 text-sm">Non</span>
+                          <span className="text-gray-600 text-sm">—</span>
                         )}
                       </td>
                       <td className="px-5 py-4">
