@@ -50,12 +50,20 @@ router.get('/meta/categories', async (req, res) => {
 // POST create product (admin)
 router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
-    const { name, description, basePrice, category, variants, featured } = req.body;
+    const { name, description, basePrice, category, variants, featured, isOnSale, discountPercentage } = req.body;
     const images = req.files
       ? req.files.map(f => `/uploads/${f.filename}`)
       : JSON.parse(req.body.imageUrls || '[]');
 
     const parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+
+    // Parse sale fields with sanitization
+    const saleEnabled = isOnSale === 'true' || isOnSale === true;
+    let discount = parseInt(discountPercentage, 10) || 0;
+    // Clamp discount to 0-100 range
+    discount = Math.max(0, Math.min(100, discount));
+    // If not on sale, reset discount to 0
+    if (!saleEnabled) discount = 0;
 
     const product = await Product.create({
       name, description,
@@ -64,6 +72,8 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
       images,
       variants: parsedVariants,
       featured: featured === 'true' || featured === true,
+      isOnSale: saleEnabled,
+      discountPercentage: discount,
     });
     res.status(201).json(product);
   } catch (err) {
@@ -74,12 +84,20 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
 // PUT update product (admin)
 router.put('/:id', auth, upload.array('images', 10), async (req, res) => {
   try {
-    const { name, description, basePrice, category, variants, featured, existingImages } = req.body;
+    const { name, description, basePrice, category, variants, featured, existingImages, isOnSale, discountPercentage } = req.body;
     const newImages = req.files ? req.files.map(f => `/uploads/${f.filename}`) : [];
     const existing = JSON.parse(existingImages || '[]');
     const images = [...existing, ...newImages];
 
     const parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+
+    // Parse sale fields with sanitization
+    const saleEnabled = isOnSale === 'true' || isOnSale === true;
+    let discount = parseInt(discountPercentage, 10) || 0;
+    // Clamp discount to 0-100 range
+    discount = Math.max(0, Math.min(100, discount));
+    // If not on sale, reset discount to 0
+    if (!saleEnabled) discount = 0;
 
     const product = await Product.findByIdAndUpdate(req.params.id, {
       name, description,
@@ -87,6 +105,8 @@ router.put('/:id', auth, upload.array('images', 10), async (req, res) => {
       category, images,
       variants: parsedVariants,
       featured: featured === 'true' || featured === true,
+      isOnSale: saleEnabled,
+      discountPercentage: discount,
     }, { new: true });
 
     if (!product) return res.status(404).json({ message: 'Produit non trouvé' });
