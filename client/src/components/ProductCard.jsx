@@ -13,6 +13,14 @@ export default function ProductCard({ product }) {
   const totalStock = product.variants?.reduce((s, v) => s + v.stock, 0) ?? 0;
   const isOutOfStock = totalStock === 0;
 
+  // Sale calculation
+  const isOnSale = product.onSale === true;
+  const discountPercentage = product.discountPercentage || 0;
+  const originalPrice = product.basePrice || 0;
+  const discountedPrice = isOnSale
+    ? originalPrice * (1 - discountPercentage / 100)
+    : originalPrice;
+
   const getImageSrc = (src) => {
     if (!src) return 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600';
     if (src.startsWith('http')) return src;
@@ -46,9 +54,9 @@ export default function ProductCard({ product }) {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {product.featured && (
-            <span className="bg-brand-500 text-white text-xs px-2 py-0.5 uppercase tracking-widest font-medium">
-              Coup de cœur
+          {isOnSale && (
+            <span className="bg-red-500 text-white text-xs px-2 py-0.5 uppercase tracking-widest font-medium animate-pulse">
+              Solde -{discountPercentage}%
             </span>
           )}
           {isOutOfStock && (
@@ -72,7 +80,17 @@ export default function ProductCard({ product }) {
           {product.name}
         </h3>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-brand-400 font-semibold text-xl">{product.basePrice} DT</span>
+          {/* Price display */}
+          <div className="flex items-center gap-2">
+            {isOnSale ? (
+              <>
+                <span className="text-gray-500 line-through text-sm">{originalPrice.toFixed(0)} DT</span>
+                <span className="text-red-500 font-bold text-xl">{discountedPrice.toFixed(0)} DT</span>
+              </>
+            ) : (
+              <span className="text-brand-400 font-semibold text-xl">{originalPrice.toFixed(0)} DT</span>
+            )}
+          </div>
           {/* Color dots */}
           <div className="flex gap-1">
             {[...new Set(product.variants?.map(v => v.color))].slice(0, 4).map(color => (

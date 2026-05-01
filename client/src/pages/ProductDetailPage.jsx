@@ -44,6 +44,15 @@ export default function ProductDetailPage() {
 
   if (!product) return null;
 
+  // Sale calculation
+  const isOnSale = product.onSale === true;
+  const discountPercentage = product.discountPercentage || 0;
+  const originalPrice = product.basePrice || 0;
+  const discountedPrice = isOnSale
+    ? originalPrice * (1 - discountPercentage / 100)
+    : originalPrice;
+  const displayPrice = isOnSale ? discountedPrice : originalPrice;
+
   const sizes = [...new Set(product.variants.map(v => v.size))];
   const colorsForSize = selectedSize
     ? [...new Set(product.variants.filter(v => v.size === selectedSize && v.stock > 0).map(v => v.color))]
@@ -72,7 +81,7 @@ export default function ProductDetailPage() {
       productImage: product.images?.[0] || '',
       size: selectedSize,
       color: selectedColor,
-      price: product.basePrice,
+      price: displayPrice,
       quantity,
     }));
     toast.success(`${product.name} ajouté au panier !`);
@@ -122,7 +131,21 @@ export default function ProductDetailPage() {
           <div>
             <p className="text-brand-500 uppercase tracking-widest text-xs mb-2">{product.category}</p>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">{product.name}</h1>
-            <p className="text-brand-400 text-3xl font-semibold mb-6">{product.basePrice} DT</p>
+
+            {/* Price display with sale */}
+            <div className="flex items-center gap-3 mb-6">
+              {isOnSale ? (
+                <>
+                  <span className="text-gray-500 line-through text-2xl">{originalPrice.toFixed(0)} DT</span>
+                  <span className="text-red-500 font-bold text-3xl">{discountedPrice.toFixed(0)} DT</span>
+                  <span className="bg-red-500 text-white text-xs px-2 py-1 uppercase tracking-widest font-medium">
+                    -{discountPercentage}%
+                  </span>
+                </>
+              ) : (
+                <span className="text-brand-400 font-semibold text-3xl">{originalPrice.toFixed(0)} DT</span>
+              )}
+            </div>
 
             <p className="text-gray-400 leading-relaxed mb-8">{product.description}</p>
 
@@ -250,11 +273,11 @@ export default function ProductDetailPage() {
                 href={`https://wa.me/${settings.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
                   `Bonjour, je souhaite commander:\n\n` +
                   `Produit: ${product.name}\n` +
-                  `Prix: ${product.basePrice} DT\n` +
+                  `Prix: ${displayPrice.toFixed(0)} DT${isOnSale ? ` (Promo -${discountPercentage}%)` : ''}\n` +
                   `Taille: ${selectedSize}\n` +
                   `Couleur: ${selectedColor}\n` +
                   `Quantité: ${quantity}\n\n` +
-                  `Total: ${product.basePrice * quantity} DT`
+                  `Total: ${(displayPrice * quantity).toFixed(0)} DT`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
