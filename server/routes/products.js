@@ -51,6 +51,8 @@ router.get('/meta/categories', async (req, res) => {
 router.post('/', auth, upload.array('images', 10), async (req, res) => {
   try {
     const { name, description, basePrice, category, variants, featured, isOnSale, discountPercentage } = req.body;
+    console.log('POST product body:', { isOnSale, discountPercentage });
+
     const images = req.files
       ? req.files.map(f => `/uploads/${f.filename}`)
       : JSON.parse(req.body.imageUrls || '[]');
@@ -59,10 +61,10 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
 
     // Parse sale fields with sanitization
     const saleEnabled = isOnSale === 'true' || isOnSale === true;
-    let discount = parseInt(discountPercentage, 10) || 0;
+    let discount = Number(discountPercentage) || 0;
     // Clamp discount to 0-100 range
     discount = Math.max(0, Math.min(100, discount));
-    // If not on sale, reset discount to 0
+    // If not on sale, force discount to 0
     if (!saleEnabled) discount = 0;
 
     const product = await Product.create({
@@ -85,6 +87,8 @@ router.post('/', auth, upload.array('images', 10), async (req, res) => {
 router.put('/:id', auth, upload.array('images', 10), async (req, res) => {
   try {
     const { name, description, basePrice, category, variants, featured, existingImages, isOnSale, discountPercentage } = req.body;
+    console.log('PUT product body:', { isOnSale, discountPercentage });
+
     const newImages = req.files ? req.files.map(f => `/uploads/${f.filename}`) : [];
     const existing = JSON.parse(existingImages || '[]');
     const images = [...existing, ...newImages];
@@ -93,10 +97,10 @@ router.put('/:id', auth, upload.array('images', 10), async (req, res) => {
 
     // Parse sale fields with sanitization
     const saleEnabled = isOnSale === 'true' || isOnSale === true;
-    let discount = parseInt(discountPercentage, 10) || 0;
+    let discount = Number(discountPercentage) || 0;
     // Clamp discount to 0-100 range
     discount = Math.max(0, Math.min(100, discount));
-    // If not on sale, reset discount to 0
+    // If not on sale, force discount to 0
     if (!saleEnabled) discount = 0;
 
     const product = await Product.findByIdAndUpdate(req.params.id, {
