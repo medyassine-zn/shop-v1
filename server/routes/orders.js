@@ -9,8 +9,6 @@ const auth = require('../middleware/auth');
 
 // POST create order (guest, no auth required)
 router.post('/', async (req, res) => {
-  await sendAdminNotification(order);
-  await sendCustomerConfirmation(order);
   try {
     const { customerInfo, items } = req.body;
 
